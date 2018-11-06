@@ -441,7 +441,8 @@ class Player:
     def __init__(self, pos=(0, 0, 0), rot=(0, 0)):
         self.pos = list(pos)
         self.rot = list(rot)
-
+        self.deltascroll=0
+        self.speedscroll=5
     def mouse_motion(self, dx, dy):
         dx /= 8;
         dy /= 8;
@@ -451,11 +452,18 @@ class Player:
             self.rot[0] = 90
         elif self.rot[0] < -90:
             self.rot[0] = -90
+    def mouse_scroll(self, dy):
+        self.deltascroll+=dy
 
     def update(self, dt, keys):
         s = dt * 10
         rotY = -self.rot[1] / 180 * math.pi
         dx, dz = s * math.sin(rotY), s * math.cos(rotY)
+        #gestion scrolling souris
+        self.pos[0] += self.deltascroll*self.speedscroll*dx;
+        self.pos[2] -= self.deltascroll*self.speedscroll*dz;
+        self.deltascroll=0;
+
         if keys[key.W]: self.pos[0] += dx; self.pos[2] -= dz
         if keys[key.S]: self.pos[0] -= dx; self.pos[2] += dz
         if keys[key.A]: self.pos[0] -= dz; self.pos[2] -= dx
@@ -463,6 +471,8 @@ class Player:
 
         if keys[key.SPACE]: self.pos[1] += s
         if keys[key.LSHIFT]: self.pos[1] -= s
+
+
 
 ########################################################################################################################
 
@@ -492,7 +502,41 @@ class Window(pyglet.window.Window):
 
         self.model = Model()
         self.player = Player((0.5, 1.5, 10.5), (-30, 0))
+#utilisation souris
+#https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
 
+    def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
+        """Zoom centré sur la souris.
+        :param x: Abscisse de la souris.
+        :type x: int
+        :param y: Ordonnée de la souris.
+        :type y: int
+        :param scroll_x: Scroll horizontal de la souris (rare).
+        :type scroll_x: int
+        :param scroll_y: Scroll vertical ('clics' de molette).
+        :type scroll_y: int
+        """
+        #if self.mouse_lock:
+        self.player.mouse_scroll(scroll_y)
+        print('scroll_y '+str(scroll_y))
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        """Dessine des cellules (efface avec <ctrl>).
+        :param x: Abscisse de la souris.
+        :type x: int
+        :param y: Ordonnée de la souris.
+        :type y: int
+        :param button: Code de la touche appuyée.
+        :type button: int
+        :param modifiers: Combinaison des codes des touches spéciales.
+        :type modifiers: int
+        """
+        if button & pyglet.window.mouse.LEFT:
+           self.mouse_lock= not self.mouse_lock
+    '''def on_mouse_release(x, y, button, modifiers):
+        if button & pyglet.window.mouse.LEFT:
+            self.mouse_lock =False
+'''
     def on_mouse_motion(self, x, y, dx, dy):
         if self.mouse_lock: self.player.mouse_motion(dx, dy)
 
