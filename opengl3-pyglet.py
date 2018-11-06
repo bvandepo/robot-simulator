@@ -2,7 +2,8 @@
 #Bertrand VANDEPORTAELE 2018
 #tiré de https://www.linux.com/blog/python-stl-model-loading-and-display-opengl
 
-
+#doc pyglet
+#https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/quickstart.html
 
 #mélange de opengl3.py et pyglettest2.py
 
@@ -31,7 +32,7 @@ import struct
 
 
 from pyglet.gl import *
-from pyglet.window import key
+from pyglet.window import *
 import math
 
 from OpenGL.GL import *
@@ -47,7 +48,7 @@ class createpoint:
         self.x=p[0]
         self.y=p[1]
         self.z=p[2]
-      
+
     def glvertex(self):
         glVertex3f(self.x,self.y,self.z)
 ########################################################################################################################
@@ -70,35 +71,35 @@ class createtriangle:
           #print ('type(normal):'+str(type(normal)))
           self.normal=normal
           #self.normal = createpoint(self.calculate_normal(self.points[0], self.points[1], self.points[2]))  # (0,1,0)#
-  
+
     #calculate vector / edge
     def calculate_vector(self,p1,p2):
         return -p1.x+p2.x,-p1.y+p2.y,-p1.z+p2.z
-      
+
     def calculate_normal(self,p1,p2,p3):
         a=self.calculate_vector(p3,p2)
         b=self.calculate_vector(p3,p1)
         #calculate the cross product returns a vector
-        return self.cross_product(a,b)    
-  
+        return self.cross_product(a,b)
+
     def cross_product(self,p1,p2):
         return (p1[1]*p2[2]-p2[1]*p1[2]) , (p1[2]*p2[0])-(p2[2]*p1[0]) , (p1[0]*p2[1])-(p2[0]*p1[1])
 ########################################################################################################################
 class loader:
     model=[]
-      
+
     #return the faces of the triangles
     def get_triangles(self):
         if self.model:
             for face in self.model:
-                yield face
+                yield face #returns a generator
+                #https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
 
     #draw the models faces
     def draw(self):
         glColor3f(1.0,1.0,1.0)
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
-            #glNormal3f(tri.normal.x,tri.normal.y,tri.normal.z)
             glNormal3f(tri.normal[0], tri.normal[1], tri.normal[2])
             glVertex3f(tri.points[0].x,tri.points[0].y,tri.points[0].z)
             glVertex3f(tri.points[1].x,tri.points[1].y,tri.points[1].z)
@@ -116,7 +117,7 @@ class loader:
         self.model.append(createtriangle(triangle[0],triangle[1],triangle[2],normal))
 
 
-  
+
     #load stl file detects if the file is a text file or binary file
     def load_stl(self,filename):
         #read start of file to determine if its a binay stl file or a ascii stl file
@@ -132,7 +133,7 @@ class loader:
         else:
             print( "reading binary stl file "+str(filename,))
             self.load_binary_stl(filename)
-  
+
     #read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
         fp=open(filename,'r')
@@ -162,7 +163,7 @@ class loader:
                     listallpointsy.append(eval(words[2]))
                     listallpointsz.append(eval(words[3]))
 
-                  
+
                 if words[0]=='endloop':
                     #make sure we got the correct number of values before storing
                     #print('len(triangle): ' + str(len(triangle)))
@@ -197,7 +198,7 @@ class loader:
                 p=fp.read(12)
                 if len(p)==12:
                     n=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
-                  
+
                 p=fp.read(12)
                 if len(p)==12:
                     p1=struct.unpack('f',p[0:4])[0],struct.unpack('f',p[4:8])[0],struct.unpack('f',p[8:12])[0]
@@ -354,7 +355,7 @@ class Model:
         self.model1 = loader()
         #self.model1.generate()
         #self.model1.load_stl(os.path.abspath('') + '/test.stl')
-        self.model1.load_stl(os.path.abspath('') + '/test2.stl')
+        self.model1.load_stl(os.path.abspath('') + '/test3.stl')
 
     #        self.batch = pyglet.graphics.Batch()
     #        for i in range(2):
@@ -390,7 +391,7 @@ class Model:
         glEnable(GL_DEPTH_TEST)
         glShadeModel(GL_SMOOTH)
         glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST) #Indicates the quality of color, texture coordinate, and fog coordinate interpolation. If perspective-corrected parameter interpolation is not efficiently supported by the GL implementation, hinting GL_DONT_CARE or GL_FASTEST can result in simple linear interpolation of colors and/or texture coordinates.
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
@@ -495,6 +496,7 @@ class Window(pyglet.window.Window):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fps_display = FPSDisplay(self)
         self.set_minimum_size(300, 200)
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
@@ -557,6 +559,7 @@ class Window(pyglet.window.Window):
         self.setMatrix(self.player.pos, self.player.rot)
         self.model.draw()
         glPopMatrix()
+        self.fps_display.draw()
 
 
 ########################################################################################################################
