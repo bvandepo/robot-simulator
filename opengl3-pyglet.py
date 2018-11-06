@@ -17,14 +17,14 @@ from statistics import *
 # Use: mean(liste)
 
 
-
+'''
 #positionnement fenêtre dans quart supérieur gauche pour évier les problèmes de rafraichissement sur écran 4k
 #https://www.pygame.org/wiki/SettingWindowPosition
 import os
-x = 20
+x = 200
 y = 20
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
-
+'''
 
 
 import os
@@ -501,11 +501,12 @@ class Window(pyglet.window.Window):
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
         pyglet.clock.schedule(self.update)
-
-        self.model = Model()
         self.player = Player((0.5, 1.5, 10.5), (-30, 0))
 #utilisation souris
 #https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
+
+    def set_Model(self,model):
+        self.model = model
 
     def on_mouse_scroll(self, x, y, scroll_x, scroll_y):
         """Zoom centré sur la souris.
@@ -520,7 +521,7 @@ class Window(pyglet.window.Window):
         """
         #if self.mouse_lock:
         self.player.mouse_scroll(scroll_y)
-        print('scroll_y '+str(scroll_y))
+        #print('scroll_y '+str(scroll_y))
 
     def on_mouse_press(self, x, y, button, modifiers):
         """Dessine des cellules (efface avec <ctrl>).
@@ -565,7 +566,14 @@ class Window(pyglet.window.Window):
 ########################################################################################################################
 
 if __name__ == '__main__':
+    model = Model()
     window = Window(width=854, height=480, caption='OpenGL Python B.Vandeportaele', resizable=True)
+    window.set_location(20, 20)
+    window.set_Model(model)
+    window2 = Window(width=654, height=480, caption='OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
+    window2.set_location(1060, 20)
+    window2.set_Model(model)
+
     pyglet.app.run()
 
 
