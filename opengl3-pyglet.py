@@ -117,8 +117,8 @@ class loader:
                 normals.append(tri.normal[2])
         self.batch = pyglet.graphics.Batch()  # liste de commandes précalculées pour accélérer le rendu
         vertex_count = len(vertices)//3
-        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices),('n3f/static', tuple(normals)) )
-        
+        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices),('n3f', normals) )
+
     def draw(self):
     #draw the models faces
         if self.batch==None:
@@ -370,6 +370,16 @@ class Model:
         return pyglet.graphics.TextureGroup(tex)
 
     def __init__(self): #,stlfilename):
+        #degrés de liberté du modèle:
+
+        self.d1=0 #self.cpt
+        self.d2=0 #self.cpt
+        self.d3=0
+        self.d4=0
+        #d5 = -100 + ($t * 120); # d5 = -100;
+        self.d5=-100 #+(self.cpt %120);
+
+
         self.cpt = 0
         #self.init_shading()
         #self.top = self.get_tex('grass_top.png')
@@ -469,38 +479,31 @@ class Model:
 #            model.draw()
         #self.model_list[5-1].draw()
 
-        d1=0 #self.cpt
-        d2=0 #self.cpt
-        d3=0
-        d4=0
-
-        #d5 = -100 + ($t * 120); # d5 = -100;
-        d5=-100+(self.cpt %120);
 
         #translation pour chaque éléments de la pince
-        l5 = d5 / 12;
+        l5 = self.d5 / 12;
 
         glRotatef(-90, 0, 0, 1)
 
         glColor3f(1.0,1.0,1.0)
         self.model_list[1-1].draw()
-        glRotatef( d1,0, 0, 1)
+        glRotatef(self.d1,0, 0, 1)
         glTranslatef(0, 0, 28)
         glColor3f(1.0,0.0,0.0)
         self.model_list[2-1].draw()
 
         glTranslatef(0, 0, 13)
-        glRotatef(d2, 0, 1, 0)
+        glRotatef(self.d2, 0, 1, 0)
         glColor3f(0.0, 1.0, 0.0)
         self.model_list[3-1].draw()
 
         glTranslatef(49.5, 0, 0)
-        glRotatef(d3,0, 1, 0)
+        glRotatef(self.d3,0, 1, 0)
         glColor3f(0.0, 0.0, 1.0)
         self.model_list[9-1].draw()
 
         glTranslatef(49.5, 0, 0)
-        glRotatef(d4,0, 1, 0)
+        glRotatef(self.d4,0, 1, 0)
         glColor3f(0.0, 1.0, 1.0)
         self.model_list[4 - 1].draw()
 
@@ -546,7 +549,7 @@ class Model:
 
         glColor3f(1.0, 0.0, 1.0)
         glTranslatef(61, -5, 8.5)
-        glRotatef(d5, 1, 0, 0)
+        glRotatef(self.d5, 1, 0, 0)
         self.model_list[6 - 1].draw()
 
 
@@ -566,6 +569,21 @@ class Model:
                              ('c3B', (255, 255, 255, 255, 0, 0, 0, 0, 255)))
             pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES, ('v3f', (0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 2.0)),
                              ('c3B', (255, 255, 255, 255, 0, 0, 0, 255, 0)))
+
+    def update(self, dt , keys):
+        dtmul=dt*5
+        if keys[key.T]: self.d1 += dtmul
+        if keys[key.G]: self.d1 -= dtmul
+        if keys[key.Y]: self.d2 += dtmul
+        if keys[key.H]: self.d2 -= dtmul
+        if keys[key.U]: self.d3 += dtmul
+        if keys[key.J]: self.d3 -= dtmul
+        if keys[key.I]: self.d4 += dtmul
+        if keys[key.K]: self.d4 -= dtmul
+        if keys[key.O]: self.d5 += dtmul*4
+        if keys[key.L]: self.d5 -= dtmul*4
+        #TODO: gérer des méthodes de pilotage des axes avec vitesse min/maxi et butées
+
 
 ########################################################################################################################
 
@@ -605,6 +623,8 @@ class Player:
         if keys[key.LSHIFT]: self.pos[1] -= s
 
         print('player : ' +str(self.pos) +str(self.rot))
+
+
 
 
 
@@ -686,6 +706,7 @@ class Window(pyglet.window.Window):
 
     def update(self, dt):
         self.player.update(dt, self.keys)
+        self.model.update(dt, self.keys)
 
     def on_draw(self):
         glClearColor(0.5, 0.7, 1, 1)
