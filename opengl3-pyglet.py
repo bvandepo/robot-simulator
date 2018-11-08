@@ -86,7 +86,9 @@ class createtriangle:
         return (p1[1]*p2[2]-p2[1]*p1[2]) , (p1[2]*p2[0])-(p2[2]*p1[0]) , (p1[0]*p2[1])-(p2[0]*p1[1])
 ########################################################################################################################
 class loader:
-    model=[]
+
+    def __init__(self):  # ,stlfilename):
+         self.model=[]
 
     #return the faces of the triangles
     def get_triangles(self):
@@ -97,7 +99,6 @@ class loader:
 
     #draw the models faces
     def draw(self):
-        glColor3f(1.0,1.0,1.0)
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
             glNormal3f(tri.normal[0], tri.normal[1], tri.normal[2])
@@ -125,7 +126,6 @@ class loader:
         h=fp.read(80)
         type=h[0:5]
         fp.close()
-
         #print('entete: '+str(type))
         if type==b'solid':
             print( "reading text file"+str(filename))
@@ -137,10 +137,9 @@ class loader:
     #read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
         fp=open(filename,'r')
-
-        listallpointsx=[]
-        listallpointsy=[]
-        listallpointsz=[]
+        #listallpointsx=[]
+        #listallpointsy=[]
+        #listallpointsz=[]
         normal =None #no normal by default
 
         for line in fp.readlines():
@@ -159,11 +158,9 @@ class loader:
                     #print('normal: ' + str(normal) ) #words[2]) + '  ' +  str(words[3]) + '  ' +  str(words[4])  )
                 if words[0]=='vertex':
                     triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
-                    listallpointsx.append(eval(words[1]))
-                    listallpointsy.append(eval(words[2]))
-                    listallpointsz.append(eval(words[3]))
-
-
+                    #listallpointsx.append(eval(words[1]))
+                    #listallpointsy.append(eval(words[2]))
+                    #listallpointsz.append(eval(words[3]))
                 if words[0]=='endloop':
                     #make sure we got the correct number of values before storing
                     #print('len(triangle): ' + str(len(triangle)))
@@ -177,12 +174,13 @@ class loader:
                         normal = None  # no normal by default for the next triangle
 
         #print('listallpoints:' +str(listallpointsx))
-        moyennex=mean(listallpointsx)
-        moyenney=mean(listallpointsy)
-        moyennez=mean(listallpointsz)
-        print('moyenne: '+str(moyennex) + ' , '+str(moyenney) + ' , '+str(moyennez))
-        maximum=max(listallpointsx)
-        print(maximum)
+        #moyennex=mean(listallpointsx)
+        #moyenney=mean(listallpointsy)
+        #moyennez=mean(listallpointsz)
+        #print('moyenne: '+str(moyennex) + ' , '+str(moyenney) + ' , '+str(moyennez))
+        #maximum=max(listallpointsx)
+        #print(maximum)
+        print('number of triangles: ' + str(len(self.model)))
         fp.close()
 
     #load binary stl file check wikipedia for the binary layout of the file
@@ -339,23 +337,33 @@ class Model:
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         return pyglet.graphics.TextureGroup(tex)
 
-    def __init__(self):
+    def __init__(self): #,stlfilename):
         self.cpt = 0
-        self.init_shading()
-        self.top = self.get_tex('grass_top.png')
-        self.side = self.get_tex('grass_side.png')
-        self.bottom = self.get_tex('dirt.png')
-        self.batch = pyglet.graphics.Batch()
+        #self.init_shading()
+        #self.top = self.get_tex('grass_top.png')
+        #self.side = self.get_tex('grass_side.png')
+        #self.bottom = self.get_tex('dirt.png')
+        #self.batch = pyglet.graphics.Batch()
         # https://pythonhosted.org/pyglet/api/pyglet.graphics.Batch-class.html
         tex_coords = ('t2f', (0, 0, 1, 0, 1, 1, 0, 1,))
 
 
-        #ici
-        # create a model instance and
-        self.model1 = loader()
-        #self.model1.generate()
+#TODO: passer les model en batch pour accélérer le rendu ou glDrawArrays
+
+        # create  model instances
+        nbparts=9
+        self.model_list = []
+        for i in range(1,nbparts+1):
+          self.model_list.append(loader())
+          filename= os.path.abspath('') +'/model/stl/p'+str(i)+'.stl'
+          print(str(i) +'=> load '+filename)
+          self.model_list[i-1].load_stl(filename)  #stockage dans la liste à partir de l'indice 0
+
+#        #self.model1.generate()
         #self.model1.load_stl(os.path.abspath('') + '/test.stl')
-        self.model1.load_stl(os.path.abspath('') + '/test3.stl')
+        #self.model1.load_stl(os.path.abspath('') + '/test3.stl')
+
+
 
     #        self.batch = pyglet.graphics.Batch()
     #        for i in range(2):
@@ -383,44 +391,134 @@ class Model:
     #        self.batch.add(4,GL_QUADS,self.side,('v3f',(x,y,Z, X,y,Z, X,Y,Z, x,Y,Z, )),tex_coords)
 
     #solid model with a light / shading
-    def init_shading(self):
-        #glEnable(GL_CULL_FACE)
+    def init_rendering(self):
+        #print('initializing rendering')
+        glEnable(GL_CULL_FACE)
         glShadeModel(GL_SMOOTH)
-        #glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
+        #depth= 0 à znear et 1 à zfar:  https://learnopengl.com/Advanced-OpenGL/Depth-testing
         glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH)
-        glDepthFunc(GL_LEQUAL)
+        glDepthFunc(GL_LESS)
+        glClearDepth(1.0)
+        glDepthMask(GL_TRUE)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST) #Indicates the quality of color, texture coordinate, and fog coordinate interpolation. If perspective-corrected parameter interpolation is not efficiently supported by the GL implementation, hinting GL_DONT_CARE or GL_FASTEST can result in simple linear interpolation of colors and/or texture coordinates.
         glEnable(GL_COLOR_MATERIAL)
         glEnable(GL_LIGHTING)
         glEnable(GL_LIGHT0)
-        glLight(GL_LIGHT0, GL_POSITION,  (10, 10, 10, 0))
-
+        glLight(GL_LIGHT0, GL_POSITION,  (20, 20, 20, 0))
         #explications éclairage: https: // www.khronos.org / opengl / wiki / How_lighting_works
         glLight(GL_LIGHT0, GL_AMBIENT, (0.5, 0.5, 0.5, 1))
         glLight(GL_LIGHT0, GL_DIFFUSE, (0.4, 0.4, 0.4, 1))
         glLight(GL_LIGHT0, GL_SPECULAR, (0.1, 0.1, 0.1, 1))
-
         glMatrixMode(GL_MODELVIEW)
-
-        glDepthFunc(GL_LEQUAL)
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
         glEnable(GL_COLOR_MATERIAL)
         #https://www.khronos.org/registry/OpenGL-Refpages/gl2.1/xhtml/glColorMaterial.xml
         glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE )
         glMatrixMode(GL_MODELVIEW)
-
+        #print('finished initializing rendering')
 
     def draw(self):
+        self.init_rendering()
+        glRotatef(-90, 1, 0, 0);
         self.cpt = self.cpt + 1
-        glTranslatef(0.5, 0.5, 0.5);
+        '''        glTranslatef(0.5, 0.5, 0.5);
         glRotatef(self.cpt, 0, 1, 0);
         glTranslatef(-0.5, -0.5, -0.5);
+        '''
+
         # self.batch.draw()
 
         # ici
-        self.model1.draw()
+        #self.model1.draw()
+#        for i in range(1,9):
+#         self.model_list[i-1].draw()
+#
+#       for model in self.model_list:
+#            model.draw()
+        #self.model_list[5-1].draw()
+
+        d1=0 #self.cpt
+        d2=0 #self.cpt
+        d3=0
+        d4=0
+
+        #d5 = -100 + ($t * 120); # d5 = -100;
+        d5=-100+(self.cpt %120);
+
+        #translation pour chaque éléments de la pince
+        l5 = d5 / 12;
+
+        glRotatef(-90, 0, 0, 1)
+
+        glColor3f(1.0,1.0,1.0)
+        self.model_list[1-1].draw()
+        glRotatef( d1,0, 0, 1)
+        glTranslatef(0, 0, 28)
+        glColor3f(1.0,0.0,0.0)
+        self.model_list[2-1].draw()
+
+        glTranslatef(0, 0, 13)
+        glRotatef(d2, 0, 1, 0)
+        glColor3f(0.0, 1.0, 0.0)
+        self.model_list[3-1].draw()
+
+        glTranslatef(49.5, 0, 0)
+        glRotatef(d3,0, 1, 0)
+        glColor3f(0.0, 0.0, 1.0)
+        self.model_list[9-1].draw()
+
+        glTranslatef(49.5, 0, 0)
+        glRotatef(d4,0, 1, 0)
+        glColor3f(0.0, 1.0, 1.0)
+        self.model_list[4 - 1].draw()
+
+        glTranslatef(0, 0, -8)
+        glColor3f(1.0, 1.0, 0.0)
+        glPushMatrix(); #1
+        glTranslatef(45, 18, -2)
+        glRotatef(90, 0, 1, 0)
+        glRotatef(180, 1, 0, 0)
+        self.model_list[5 - 1].draw()
+
+        glPopMatrix(); #0
+        glPushMatrix();#1
+        glTranslatef(0, -l5, 0)
+        glPushMatrix();#2
+        glTranslatef(81, -15.5, 20)
+        glRotatef(180, 0, 1, 0)
+        glRotatef(90, 1, 0, 0)
+        self.model_list[7 - 1].draw()
+
+        glPopMatrix();#1
+        glTranslatef(58, -22.5, 18)
+        glRotatef(90, 0, 1, 0)
+        self.model_list[8 - 1].draw()
+
+        glPopMatrix();#0
+        glPushMatrix();#1
+        glTranslatef(0, +l5, 0)
+        glPushMatrix();#2
+        glTranslatef(81, 3.5, -3)
+        glRotatef(180, 0, 1, 0)
+        glRotatef(-90, 1, 0, 0)
+        self.model_list[7 - 1].draw()
+
+        glPopMatrix();#1
+        glPushMatrix(); #2
+        glTranslatef(58, 12.5, -1)
+        glRotatef(180, 0, 0, 1)
+        glRotatef(-90, 0, 1, 0)
+        self.model_list[8 - 1].draw()
+        glPopMatrix();  # 1
+        glPopMatrix();  # 0
+
+        glColor3f(1.0, 0.0, 1.0)
+        glTranslatef(61, -5, 8.5)
+        glRotatef(d5, 1, 0, 0)
+        self.model_list[6 - 1].draw()
+
+
+
         triangle1 = False
         if triangle1:
             # affichage d'un triangle non texturé seul
@@ -430,10 +528,11 @@ class Model:
             glEnableClientState(GL_VERTEX_ARRAY)
             glVertexPointer(2, GL_FLOAT, 0, vertices_gl)
             glDrawArrays(GL_TRIANGLES, 0, int(len(vertices) / 2))
-
-        pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES, ('v2f', (0.0, 1.0, 1.0, 0.0, 1.0, 1.0)),
+        triangle2 = False
+        if triangle2:
+            pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES, ('v2f', (0.0, 1.0, 1.0, 0.0, 1.0, 1.0)),
                              ('c3B', (255, 255, 255, 255, 0, 0, 0, 0, 255)))
-        pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES, ('v3f', (0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 2.0)),
+            pyglet.graphics.draw(3, pyglet.gl.GL_TRIANGLES, ('v3f', (0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 2.0)),
                              ('c3B', (255, 255, 255, 255, 0, 0, 0, 255, 0)))
 
 ########################################################################################################################
@@ -473,6 +572,8 @@ class Player:
         if keys[key.SPACE]: self.pos[1] += s
         if keys[key.LSHIFT]: self.pos[1] -= s
 
+        print('player : ' +str(self.pos) +str(self.rot))
+
 
 
 ########################################################################################################################
@@ -487,7 +588,7 @@ class Window(pyglet.window.Window):
     def set2d(self):
         self.Projection(); gluOrtho2D(0, self.width, 0, self.height); self.Model()
     def set3d(self):
-        self.Projection(); gluPerspective(70, self.width / self.height, 0.05, 1000); self.Model()
+        self.Projection(); gluPerspective(70, self.width / self.height, 0.1, 1000); self.Model()
     def setLock(self, state):
         self.lock = state; self.set_exclusive_mouse(state)
 
@@ -501,8 +602,10 @@ class Window(pyglet.window.Window):
         self.keys = key.KeyStateHandler()
         self.push_handlers(self.keys)
         pyglet.clock.schedule(self.update)
-        self.player = Player((0.5, 1.5, 10.5), (-30, 0))
-#utilisation souris
+        #self.player = Player((0.5, 1.5, 10.5), (-30, 0))
+        self.player = Player((18.9301446246206, 1.5, 189.66455050743974), (36. , 15.75))
+
+    #utilisation souris
 #https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
 
     def set_Model(self,model):
@@ -556,7 +659,7 @@ class Window(pyglet.window.Window):
         glClearColor(0.5, 0.7, 1, 1)
         self.clear()
         self.set3d()
-        glPushMatrix();
+        glPushMatrix()
         self.setMatrix(self.player.pos, self.player.rot)
         self.model.draw()
         glPopMatrix()
@@ -566,13 +669,15 @@ class Window(pyglet.window.Window):
 ########################################################################################################################
 
 if __name__ == '__main__':
-    model = Model()
+    model = Model() #'/test3.stl')
     window = Window(width=854, height=480, caption='OpenGL Python B.Vandeportaele', resizable=True)
     window.set_location(20, 20)
     window.set_Model(model)
-    window2 = Window(width=654, height=480, caption='OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
-    window2.set_location(1060, 20)
-    window2.set_Model(model)
+    secondWindow=False
+    if secondWindow:
+        window2 = Window(width=654, height=480, caption='OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
+        window2.set_location(1060, 20)
+        window2.set_Model(model)
 
     pyglet.app.run()
 
