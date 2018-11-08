@@ -99,6 +99,7 @@ class loader:
 
     def generate_batch(self):
         vertices = []
+        normals = []
         for tri in self.get_triangles():
             #glNormal3f(tri.normal[0], tri.normal[1], tri.normal[2])
             vertices.append(tri.points[0].x)
@@ -110,12 +111,14 @@ class loader:
             vertices.append(tri.points[2].x)
             vertices.append(tri.points[2].y)
             vertices.append(tri.points[2].z)
+            for p in range(3): #add a normal vector for each vertex
+                normals.append(tri.normal[0])
+                normals.append(tri.normal[1])
+                normals.append(tri.normal[2])
         self.batch = pyglet.graphics.Batch()  # liste de commandes précalculées pour accélérer le rendu
         vertex_count = len(vertices)//3
-        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices) )
-            #,                                             ('c4f', (1, 1, 1, 0.8) * vertex_count))
-
-        #self.vertex_list = self.batch.add(4 * num, GL_QUADS, self.group, 'v2i', 'c4B', ('t3f', self.fimg.texture.tex_coords * num))
+        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices),('n3f/static', tuple(normals)) )
+        
     def draw(self):
     #draw the models faces
         if self.batch==None:
@@ -183,7 +186,7 @@ class loader:
                 if words[0]=='facet':
                     center=[0.0,0.0,0.0]
                     triangle=[]
-                    normal=(eval(words[2]),eval(words[3]),eval(words[4]))
+                    normal=(float(eval(words[2])),float(eval(words[3])),float(eval(words[4]))) #cast en float sinon les valeurs entières sont stockées en int
                     #print('normal: ' + str(normal) ) #words[2]) + '  ' +  str(words[3]) + '  ' +  str(words[4])  )
                 if words[0]=='vertex':
                     triangle.append((float(eval(words[1])),float(eval(words[2])),float(eval(words[3])))) #cast en float sinon les valeurs entières sont stockées en int
