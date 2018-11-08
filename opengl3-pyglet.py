@@ -88,8 +88,8 @@ class createtriangle:
 class loader:
 
     def __init__(self):  # ,stlfilename):
-         self.model=[]
-
+        self.model=[]
+        self.batch=None
     #return the faces of the triangles
     def get_triangles(self):
         if self.model:
@@ -97,8 +97,36 @@ class loader:
                 yield face #returns a generator
                 #https://stackoverflow.com/questions/231767/what-does-the-yield-keyword-do
 
-    #draw the models faces
+    def generate_batch(self):
+        vertices = []
+        for tri in self.get_triangles():
+            #glNormal3f(tri.normal[0], tri.normal[1], tri.normal[2])
+            vertices.append(tri.points[0].x)
+            vertices.append(tri.points[0].y)
+            vertices.append(tri.points[0].z)
+            vertices.append(tri.points[1].x)
+            vertices.append(tri.points[1].y)
+            vertices.append(tri.points[1].z)
+            vertices.append(tri.points[2].x)
+            vertices.append(tri.points[2].y)
+            vertices.append(tri.points[2].z)
+        self.batch = pyglet.graphics.Batch()  # liste de commandes précalculées pour accélérer le rendu
+        vertex_count = len(vertices)//3
+        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices) )
+            #,                                             ('c4f', (1, 1, 1, 0.8) * vertex_count))
+
+        #self.vertex_list = self.batch.add(4 * num, GL_QUADS, self.group, 'v2i', 'c4B', ('t3f', self.fimg.texture.tex_coords * num))
     def draw(self):
+    #draw the models faces
+        if self.batch==None:
+            self.drawSlow()
+        else:
+            self.drawBatch()
+
+    def drawBatch(self):
+        self.batch.draw()
+
+    def drawSlow(self):
         glBegin(GL_TRIANGLES)
         for tri in self.get_triangles():
             glNormal3f(tri.normal[0], tri.normal[1], tri.normal[2])
@@ -133,6 +161,7 @@ class loader:
         else:
             print( "reading binary stl file "+str(filename,))
             self.load_binary_stl(filename)
+        self.generate_batch()
 
     #read text stl match keywords to grab the points to build the model
     def load_text_stl(self,filename):
@@ -157,7 +186,7 @@ class loader:
                     normal=(eval(words[2]),eval(words[3]),eval(words[4]))
                     #print('normal: ' + str(normal) ) #words[2]) + '  ' +  str(words[3]) + '  ' +  str(words[4])  )
                 if words[0]=='vertex':
-                    triangle.append((eval(words[1]),eval(words[2]),eval(words[3])))
+                    triangle.append((float(eval(words[1])),float(eval(words[2])),float(eval(words[3])))) #cast en float sinon les valeurs entières sont stockées en int
                     #listallpointsx.append(eval(words[1]))
                     #listallpointsy.append(eval(words[2]))
                     #listallpointsz.append(eval(words[3]))
