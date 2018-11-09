@@ -1,47 +1,47 @@
-#!/usr/bin/python3 
-#Bertrand VANDEPORTAELE 2018
-#tiré de https://www.linux.com/blog/python-stl-model-loading-and-display-opengl
+#!/usr/bin/python3
+'''
+Copyright (c) 2018, Bertrand Vandeportaele
+All rights reserved.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
 
-#doc pyglet
-#https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/quickstart.html
+* Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+* Neither the name of the University of California, Berkeley nor the
+  names of its contributors may be used to endorse or promote products
+  derived from this software without specific prior written permission.
 
-#mélange de opengl3.py et pyglettest2.py
+THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE REGENTS AND CONTRIBUTORS BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+'''
 
-#bvandepo@rapid:~/Téléchargements/reprap2/boulot_bvdp/support_ueye_et_pixy$ cp support_ueye_stereo_V2_tube_circulaire.stl ~/Bureau/pythonb/test.stl
-
-
+#stl file decoding based on https://www.linux.com/blog/python-stl-model-loading-and-display-opengl
+#doc pyglet: https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/quickstart.html
 
 import statistics
 # Use: statistics.mean(liste)
 from statistics import *
 # Use: mean(liste)
 
-
-'''
-#positionnement fenêtre dans quart supérieur gauche pour évier les problèmes de rafraichissement sur écran 4k
-#https://www.pygame.org/wiki/SettingWindowPosition
-import os
-x = 200
-y = 20
-os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
-'''
-
-
 import os
 import struct
 
-
 from pyglet.gl import *
 from pyglet.window import *
-import math
-
 from OpenGL.GL import *
 from OpenGL.GLU import *
-#import pygame
-#from pygame.locals import *
-
-import sys
-
+import math
 
 ########################################################################################################################
 def command_os(commandline):
@@ -280,84 +280,6 @@ class loader:
                 break
         fp.close()
 
-########################################################################################################################
-'''
-class draw_scene:
-    def __init__(self,style=1):
-        #create a model instance and
-        self.model1=loader()
-
-        self.model1.load_stl(os.path.abspath('')+'/test.stl')
-#        self.model1.generate()
-
-        self.init_shading()
-        self.cpt=0
-
-
-    #solid model with a light / shading
-    def init_shading(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-      
-        glEnable(GL_COLOR_MATERIAL)
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)   
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))      
-        glMatrixMode(GL_MODELVIEW)
-      
-    def resize(self,width, height):
-        if height==0:
-            height=1
-        glViewport(0, 0, width, height)
-        glMatrixMode(GL_PROJECTION)
-        glLoadIdentity()
-        gluPerspective(45, 1.0*width/height, 0.1, 100.0)
-        #gluLookAt(0.0,0.0,45.0,0,0,0,0,40.0,0)
-        glMatrixMode(GL_MODELVIEW)
-        glLoadIdentity()
-
-    def init(self):
-        glShadeModel(GL_SMOOTH)
-        glClearColor(0.0, 0.0, 0.0, 0.0)
-        glClearDepth(1.0)
-        glEnable(GL_DEPTH_TEST)
-        glShadeModel(GL_SMOOTH) 
-        glDepthFunc(GL_LEQUAL)
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-        glEnable(GL_COLOR_MATERIAL)
-      
-#sactivation éclairage
-        glEnable(GL_LIGHTING)
-        glEnable(GL_LIGHT0)   
-#        glLight(GL_LIGHT0, GL_POSITION,  (0, 1, 1, 0))
-        glLight(GL_LIGHT0, GL_POSITION,  (0, 10, 10, 0))
-
-        glMatrixMode(GL_MODELVIEW)
-
-    def draw(self):
-        glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT)
-        glLoadIdentity()
-      
-#        glTranslatef(0.0,-26.0, -100.0)
-        gluLookAt( 10.,10.,20., 0.,0.,0., 0.,1.,0.)
- 
-        glRotatef(self.cpt, 0, 1, 0)
-        print('self.cpt: '+str(self.cpt))
-        self.cpt=(self.cpt+1 )%360
-
-#        fact=1000
-#        glScalef(fact,fact,fact)
-        self.model1.draw()
-'''
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
-########################################################################################################################
 ########################################################################################################################
 
 
@@ -667,6 +589,7 @@ class Window(pyglet.window.Window):
         self.Projection(); gluOrtho2D(0, self.width, 0, self.height); self.Model()
     def set3d(self):
         self.Projection(); gluPerspective(70, self.width / self.height, 0.1, 1000); self.Model()
+#TODO use gluLookAt( 10.,10.,20., 0.,0.,0., 0.,1.,0.)
     def setLock(self, state):
         self.lock = state; self.set_exclusive_mouse(state)
 
@@ -681,11 +604,10 @@ class Window(pyglet.window.Window):
         self.push_handlers(self.keys)
         pyglet.clock.schedule(self.update)
         #self.player = Player((0.5, 1.5, 10.5), (-30, 0))
+#set an initial configuration for the camera
         self.player = Player((18.9301446246206, 1.5, 189.66455050743974), (36. , 15.75))
 
-    #utilisation souris
-#https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
-
+#documentation about mouse:   https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
     def set_Model(self,model):
         self.model = model
 
@@ -700,9 +622,8 @@ class Window(pyglet.window.Window):
         :param scroll_y: Scroll vertical ('clics' de molette).
         :type scroll_y: int
         """
-        #if self.mouse_lock:
         self.player.mouse_scroll(scroll_y)
-        #print('scroll_y '+str(scroll_y))
+
 
     def on_mouse_press(self, x, y, button, modifiers):
         """Dessine des cellules (efface avec <ctrl>).
@@ -720,7 +641,7 @@ class Window(pyglet.window.Window):
     '''def on_mouse_release(x, y, button, modifiers):
         if button & pyglet.window.mouse.LEFT:
             self.mouse_lock =False
-'''
+    '''
     def on_mouse_motion(self, x, y, dx, dy):
         if self.mouse_lock: self.player.mouse_motion(dx, dy)
 
@@ -761,44 +682,3 @@ if __name__ == '__main__':
         window2.set_Model(model)
 
     pyglet.app.run()
-
-
-'''
-#main program loop
-def main(): 
-    #initalize pygame
-    pygame.init()
-    pygame.display.set_mode((640,480), OPENGL|DOUBLEBUF)
-
-    #setup the open gl scene
-    scene=draw_scene()
-    scene.resize(640,480)
-  
-    frames = 0
-    ticks = pygame.time.get_ticks()
-    while 1:
-        event = pygame.event.poll()
-        if event.type == QUIT or (event.type == KEYDOWN and event.key == K_ESCAPE):
-            break
-
-       
-        #draw the scene
-        scene.draw() 
-        pygame.display.flip()
-        pygame.time.wait(10)
-        frames = frames+1
-
-        #always reset this windows as the active one.... only for linux
-        #command='wmctrl -a \''+windowsName+'\''
-        #os.system(command)
-
-        x = 100
-        y = 0
-        os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (x,y)
-
-    print( "fps:  %d" % ((frames*1000)/(pygame.time.get_ticks()-ticks)))
-
-
-if __name__ == '__main__':
-    main()
-'''
