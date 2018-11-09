@@ -37,8 +37,33 @@ import math
 
 from OpenGL.GL import *
 from OpenGL.GLU import *
-import pygame
-from pygame.locals import *
+#import pygame
+#from pygame.locals import *
+
+import sys
+
+
+########################################################################################################################
+def command_os(commandline):
+    print('running: ' + commandline)
+    os.system(commandline)
+########################################################################################################################
+def generate_stl(filename,nbparts):
+    #filename=fichier scad avec path complet et extension .scad
+    #TODO extraire du .scad le nombre de pièces à traiter
+    dirname=filename.replace('.scad','_stl/')
+    if os.path.isdir(dirname):
+        print('.stl files already generated, skiping... remove manually '+dirname+' to force generation of stl files')
+    else:
+        print('generation of .stl files, it may take a while...')
+        #print(dirname)
+        commandline='mkdir -p '+dirname #create directory for stl files
+        command_os(commandline)
+        for i in range(1, 9 + 1):
+            print('processing part ' + str(i) )
+            commandline='openscad -D printerpart=' +str(i)+ ' -o ' + dirname+ 'p' + str(i) + '.stl ' + filename
+            command_os(commandline)
+#generate_stl(os.path.abspath('')+'/model/RoboArm_parts.scad',9)
 ########################################################################################################################
 #class for a 3d point
 class createpoint:
@@ -117,7 +142,7 @@ class loader:
                 normals.append(tri.normal[2])
         self.batch = pyglet.graphics.Batch()  # liste de commandes précalculées pour accélérer le rendu
         vertex_count = len(vertices)//3
-        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f', vertices),('n3f', normals) )
+        self.vertex_list = self.batch.add( vertex_count , pyglet.gl.GL_TRIANGLES, None, ('v3f/static', vertices),('n3f/static', normals) )
 
     def draw(self):
     #draw the models faces
@@ -397,7 +422,8 @@ class Model:
         self.model_list = []
         for i in range(1,nbparts+1):
           self.model_list.append(loader())
-          filename= os.path.abspath('') +'/model/stl/p'+str(i)+'.stl'
+          #filename= os.path.abspath('') +'/model/stl/p'+str(i)+'.stl'
+          filename = os.path.abspath('') + '/model/RoboArm_parts_stl/p' + str(i) + '.stl'
           print(str(i) +'=> load '+filename)
           self.model_list[i-1].load_stl(filename)  #stockage dans la liste à partir de l'indice 0
 
@@ -722,13 +748,15 @@ class Window(pyglet.window.Window):
 ########################################################################################################################
 
 if __name__ == '__main__':
+
+    generate_stl(os.path.abspath('') + '/model/RoboArm_parts.scad', 9)
     model = Model() #'/test3.stl')
-    window = Window(width=854, height=480, caption='OpenGL Python B.Vandeportaele', resizable=True)
+    window = Window(width=854, height=480, caption='Robot Simulator OpenGL Python B.Vandeportaele', resizable=True)
     window.set_location(20, 20)
     window.set_Model(model)
     secondWindow=False
     if secondWindow:
-        window2 = Window(width=654, height=480, caption='OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
+        window2 = Window(width=654, height=480, caption='Robot Simulator OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
         window2.set_location(1060, 20)
         window2.set_Model(model)
 
