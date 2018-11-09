@@ -562,9 +562,9 @@ class Player:
         self.pos[2] -= self.deltascroll*self.speedscroll*dz;
         self.deltascroll=0;
 
-        if keys[key.W]: self.pos[0] += dx; self.pos[2] -= dz
+        if keys[key.Z]: self.pos[0] += dx; self.pos[2] -= dz
         if keys[key.S]: self.pos[0] -= dx; self.pos[2] += dz
-        if keys[key.A]: self.pos[0] -= dz; self.pos[2] -= dx
+        if keys[key.Q]: self.pos[0] -= dz; self.pos[2] -= dx
         if keys[key.D]: self.pos[0] += dz; self.pos[2] += dx
 
         if keys[key.SPACE]: self.pos[1] += s
@@ -605,7 +605,8 @@ class Window(pyglet.window.Window):
         pyglet.clock.schedule(self.update)
         #self.player = Player((0.5, 1.5, 10.5), (-30, 0))
 #set an initial configuration for the camera
-        self.player = Player((18.9301446246206, 1.5, 189.66455050743974), (36. , 15.75))
+        self.player = Player((-7.138850324637332, 33.1683030128479, 194.29287919810506), (16.375, -2.5))
+
 
 #documentation about mouse:   https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
     def set_Model(self,model):
