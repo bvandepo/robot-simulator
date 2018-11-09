@@ -26,8 +26,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 '''
 
+
+#robot model from: https://www.thingiverse.com/thing:65081
+
 #stl file decoding based on https://www.linux.com/blog/python-stl-model-loading-and-display-opengl
+
 #doc pyglet: https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/quickstart.html
+#            https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/index.html
+#            https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/context.html
+#            https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/graphics.html
+#            https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/windowing.html
+#            https://pyglet.readthedocs.io/en/pyglet-1.3-maintenance/programming_guide/mouse.html
+
+#lighting:   https://learnopengl.com/Lighting/Basic-Lighting
+#            https://www.khronos.org/opengl/wiki/How_lighting_works
 
 import statistics
 # Use: statistics.mean(liste)
@@ -520,6 +532,8 @@ class Model:
 
     def update(self, dt , keys):
         dtmul=dt*5
+        if keys[key.LSHIFT]:  dtmul=dtmul*5 #run
+
         if keys[key.T]: self.d1 += dtmul
         if keys[key.G]: self.d1 -= dtmul
         if keys[key.Y]: self.d2 += dtmul
@@ -555,6 +569,8 @@ class Player:
 
     def update(self, dt, keys):
         s = dt * 10
+        if keys[key.LSHIFT]:  s=s*5 #run
+
         rotY = -self.rot[1] / 180 * math.pi
         dx, dz = s * math.sin(rotY), s * math.cos(rotY)
         #gestion scrolling souris
@@ -568,7 +584,7 @@ class Player:
         if keys[key.D]: self.pos[0] += dz; self.pos[2] += dx
 
         if keys[key.SPACE]: self.pos[1] += s
-        if keys[key.LSHIFT]: self.pos[1] -= s
+        if keys[key.LCTRL]: self.pos[1] -= s
 
         print('player : ' +str(self.pos) +str(self.rot))
 
@@ -676,7 +692,7 @@ if __name__ == '__main__':
     window = Window(width=854, height=480, caption='Robot Simulator OpenGL Python B.Vandeportaele', resizable=True)
     window.set_location(20, 20)
     window.set_Model(model)
-    secondWindow=False
+    secondWindow=True
     if secondWindow:
         window2 = Window(width=654, height=480, caption='Robot Simulator OpenGL Python B.Vandeportaele 2', resizable=True) #, vsync=False)
         window2.set_location(1060, 20)
