@@ -10,11 +10,11 @@ robot-simulator is an attempt to help the design/simulation of robotic platforms
   sudo pip3 install PyOpenGL
 ```
 
-##openscad software
+## openscad software
 ```
   sudo apt-get install openscad
 ```
-###For Ubuntu 18.04
+### For Ubuntu 18.04
 ```
   gdebi will manage .deb dependencies
   sudo apt-get install gdebi-core
@@ -22,7 +22,8 @@ robot-simulator is an attempt to help the design/simulation of robotic platforms
   sudo gdebi openscad_2015.03-2+dfsg-2+b3_amd64.deb
 ```
 
-#usage
+# usage
+
 robot-simulator is provided with a simple robot arm model.
 Just launch `robot-simulator.py` and the program will (at the first time only)  generate the stl models for the different parts of the robot.
 The camera is moved using the keys ZQSD and CTRL,SPACE. It is rotated using the mouse, but it requires the user to left click on the window to capture and release the mouse.
