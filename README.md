@@ -3,7 +3,7 @@
 robot-simulator is an attempt to help the design/simulation of robotic platforms from the mechanical design (using openscad) to the geometric direct and inverse kinematic modeling simulation using OpenGL 3D visualization in Pyton3
 
 # dependencies
-##pyglet and OpenGL python libraries
+##  pyglet and OpenGL python libraries
 ```
   sudo apt-get install python3-pip
   sudo pip3 install pyglet
@@ -14,7 +14,9 @@ robot-simulator is an attempt to help the design/simulation of robotic platforms
 ```
   sudo apt-get install openscad
 ```
-### For Ubuntu 18.04
+
+For Ubuntu 18.04:
+
 ```
   gdebi will manage .deb dependencies
   sudo apt-get install gdebi-core
