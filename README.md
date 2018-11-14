@@ -28,7 +28,7 @@ For Ubuntu 18.04:
 
 robot-simulator is provided with a simple robot arm model.
 Just launch `robot-simulator.py` and the program will (at the first time only)  generate the stl models for the different parts of the robot.
-The camera is moved using the keys ZQSD and CTRL,SPACE. It is rotated using the mouse, but it requires the user to left click on the window to capture and release the mouse.
-Faster motions are achieved by pressing the SHIFT key.
+The camera is moved using the keys ZQSD and CTRL,SPACE. The mouse weel allows to move forward/backward. The camera orientation is set using the mouse, but it requires the user to left click on the window to capture and release the mouse.
+Faster motions are achieved by pressing the LEFT-SHIFT key.
 The different degrees of freedom of the robot are controlled through the keys TYUIO and GHJKL. 
 
